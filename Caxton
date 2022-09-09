@@ -1,0 +1,209 @@
+
+Login Component .html
+--------------------------
+<form [formGroup]="loginForm" (ngSubmit)="loginUser()">
+<label> Email </label>
+<input type="text" id="email" name="email" formControlName="email" placeholder="Enter Email">
+<small style="color: red;" *ngIf=" submitted && Form.email.errors?.required">
+email is required
+</small>
+<br>
+<label> password </label>
+<input type="password" id="password" name="password" formControlName="password" placeholder="Enter P
+assword">
+<small style="color: red;" *ngIf=" submitted && Form.password.errors?.required">
+password is required
+</small>
+<br>
+<input type="submit" value="Login" id="loginButton">
+<br>
+<label> New User/Admin? </label> <a routerLink='/user/signup' id="signupLink"> Signup </a>
+</form>
+Login Component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl, Validators} from '@angular/forms';
+import { Router } from '@angular/router';
+import { LoginService } from '../login.service';
+@Component({
+selector: 'app-login',
+templateUrl: './login.component.html',
+styleUrls: ['./login.component.css']
+})
+export class LoginComponent implements OnInit {
+submitted : boolean = false;
+constructor(public srvc : LoginService, public rtr : Router) { }
+ngOnInit(): void {
+}
+loginForm = new FormGroup({
+email : new FormControl('', [Validators.email, Validators.required]),
+password : new FormControl('', [Validators.required])
+});
+get Form(){
+return this.loginForm.controls;
+}
+result : any;
+loginUser(){
+if(this.loginForm.invalid)
+this.submitted = true;
+else
+{
+this.submitted = false;
+this.result = this.srvc.validateUser(this.loginForm.value["email"],this.loginForm.value["password"]);
+if (this.result != “admin”)
+{
+localStorage.setItem("username",this.result"] );
+this.rtr.navigate(["customerloanapply"]);
+}
+else
+{
+if (this.result == “admin”)
+{
+localStorage.setItem("username",this.result"] );
+this.rtr.navigate(["adminappliedloan"]);
+}
+else
+{
+Alert(“Invalid credentials”);
+}
+}
+}
+}
+}
+loginService.ts
+import { Injectable } from '@angular/core';
+@Injectable({
+providedIn: 'root'
+})
+export class LoginService {
+constructor() { }
+validateUser(email:any, password:any){
+api link to get username from database
+return username
+}
+}
+App-routing-module.ts
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { AdminappliedloanComponent } from './adminappliedloan/adminappliedloan.component';
+import { AuthGuard } from './auth.guard';
+import { CustomerapplyloanComponent } from './customerapplyloan/customerapplyloan.component';
+import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
+const routes: Routes = [
+{path:'', component: LoginComponent},
+{path:'user/login', component:LoginComponent},
+{path:'user/signup', component:SignupComponent},
+{path:'user/addLoan', component:CustomerapplyloanComponent, canActivate :[AuthGuard]},
+{path:'admin/getAllLoans', component:AdminappliedloanComponent, canActivate:[AuthGuard]}
+];
+@NgModule({
+imports: [RouterModule.forRoot(routes)],
+exports: [RouterModule]
+})
+export class AppRoutingModule { }
+authguard.ts
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+@Injectable({
+providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+constructor( public rtr : Router){}
+canActivate(
+route: ActivatedRouteSnapshot,
+state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree
+{
+if(localStorage.getItem("username")==null)
+{
+this.rtr.navigate(["user/login"]);
+return false;
+}
+return true;
+}
+}
+Singup.component.html
+<form [formGroup]="signupForm" (ngSubmit)="onRegister()">
+<input type="text" id="admin/user" name="adminoruser" formControlName="adminoruser" placeholder="Ente
+r admin/user">
+<small style="color: red;" *ngIf=" submitted && Form.adminoruser.errors?.required">
+This field is required
+</small>
+<br>
+<input type="email" id="email" name="email" formControlName="email" placeholder="Enter email">
+<small style="color: red;" *ngIf=" submitted && Form.email.errors?.required">
+email is required
+</small>
+<small style="color: red;" *ngIf=" submitted && Form.email.errors?.email">
+invalid email id
+</small>
+<br>
+<input type="text" id="username" name="username" formControlName="username" placeholder="Enter usern
+ame">
+<small style="color: red;" *ngIf=" submitted && Form.username.errors?.required">
+username is required
+</small>
+<small style="color:red" *ngIf="submitted && Form.username.hasError('pattern')">
+username should begin with an alphabet and accept only letter and digits
+</small>
+<br>
+<input type="text" id="mobilenumber" name="mobilenumber" formControlName="mobilenumber" placeholder
+="Enter mobilenumber">
+<small style="color: red;" *ngIf=" submitted && Form.mobilenumber.errors?.required">
+mobilenumber is required
+</small>
+<small style="color:red" *ngIf="submitted && Form.mobilenumber.hasError('pattern')">
+Mobile number should be a 10 digit number must begin with either 6 or 7 or 8 or 9
+</small>
+<br>
+<input type="password" id="password" name="password" formControlName="password" placeholder="Enter p
+assword">
+<small style="color: red;" *ngIf=" submitted && Form.password.errors?.required">
+password is required
+</small>
+<small style="color:red" *ngIf="submitted && Form.mobilenumber.hasError('pattern')">
+Password should contain minimum 6 characters length and maximum 10 characters
+</small>
+<br>
+<input type="password" id="confirmpassword" name="confirmpassword" formControlName="confirmpassword
+" placeholder="Enter confirmpassword">
+<small style="color: red;" *ngIf=" submitted && Form.confirmpassword.errors?.required">
+confirm password is required
+</small>
+<br>
+<input type="submit" value="Submit" id="submitButton">
+<br>
+<label>Already a user? </label> <a id="loginLink" routerLink='/user/login'> Login </a>
+</form>
+Signup.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl, Validators} from '@angular/forms';
+@Component({
+selector: 'app-signup',
+templateUrl: './signup.component.html',
+styleUrls: ['./signup.component.css']
+})
+export class SignupComponent implements OnInit {
+submitted : boolean = false;
+constructor() { }
+ngOnInit(): void {
+}
+signupForm = new FormGroup({
+adminoruser : new FormControl('',[Validators.required]),
+email : new FormControl('',[Validators.required, Validators.email]),
+username : new FormControl('',[Validators.required, Validators.pattern('^[a-zA-Z][a-zA-Z0-9]+$')]),
+mobilenumber: new FormControl('',[Validators.required, Validators.pattern('^[6789]\d{9}')]),
+password : new FormControl('',[Validators.required, Validators.minLength(6), Validators.maxLength(10)]),
+confirmpassword : new FormControl('',[Validators.required]),
+applicantAadharNo : new FormControl('', [Validators.required, Validators.pattern('\d{12}')])
+});
+get Form(){
+return this.signupForm.controls;
+}
+onRegister(){
+if(this.signupForm.invalid)
+this.submitted = true;
+else
+this.submitted = false;
+}
+}
